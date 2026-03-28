@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ModHost</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f0f0f;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background: #5865F2;
+      border: none;
+      padding: 10px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    input, select {
+      padding: 8px;
+      margin: 5px 0;
+      width: 200px;
+    }
+
+    .publish-box {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 12px;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .tag {
+      font-size: 12px;
+      background: #333;
+      padding: 3px 6px;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+
+    a {
+      color: #4da6ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>ModHost</h1>
+
+<div class="topbar">
+  <button onclick="login()">Login with Discord</button>
+</div>
+
+<div class="publish-box">
+  <h3>Publish Mod</h3>
+
+  <input id="name" placeholder="Mod name"><br>
+  <input id="description" placeholder="Description"><br>
+  <input id="url" placeholder="GitHub / MediaFire link"><br>
+
+  <select id="loader">
+    <option>Fabric</option>
+    <option>Forge</option>
+    <option>NeoForge</option>
+    <option>Sponge</option>
+    <option>OptiFine</option>
+    <option>Iris</option>
+  </select>
+
+  <select id="category">
+    <option>Mod</option>
+    <option>Shader</option>
+  </select>
+
+  <br><br>
+  <button onclick="publish()">Publish</button>
+</div>
+
+<h2>Mods</h2>
+<div class="grid" id="mods"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  'https://dykpxbseaqtjpfznofgl.supabase.co',
+  'sb_publishable_D_ne4_vfo-pshzHMsBg3Jw_d8K7F8lt'
+)
+
+// 🔐 Login
+window.login = async () => {
+  await supabase.auth.signInWithOAuth({
+    provider: 'discord'
+  })
+}
+
+// 📦 Publish mod
+window.publish = async () => {
+  const { data: userData } = await supabase.auth.getUser()
+  const user = userData.user
+
+  if (!user) {
+    alert("Login first")
+    return
+  }
+
+  const name = document.getElementById('name').value
+  const description = document.getElementById('description').value
+  const url = document.getElementById('url').value
+  const loader = document.getElementById('loader').value
+  const category = document.getElementById('category').value
+
+  // 🔒 Restrict links
+  if (!url.includes("github.com") && !url.includes("mediafire.com")) {
+    alert("Only GitHub or MediaFire links allowed")
+    return
+  }
+
+  await supabase.from('mods').insert({
+    name,
+    description,
+    download_url: url,
+    loader,
+    category,
+    user_id: user.id
+  })
+
+  alert("Published!")
+  loadMods()
+}
+
+// 📥 Load mods
+async function loadMods() {
+  const { data } = await supabase
+    .from('mods')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  const container = document.getElementById('mods')
+  container.innerHTML = ""
+
+  data.forEach(mod => {
+    container.innerHTML += `
+      <div class="card">
+        <h3>${mod.name}</h3>
+        <p>${mod.description || ""}</p>
+
+        <div>
+          <span class="tag">${mod.loader}</span>
+          <span class="tag">${mod.category}</span>
+        </div>
+
+        <br>
+        <a href="${mod.download_url}" target="_blank">Download</a>
+      </div>
+    `
+  })
+}
+
+loadMods()
+</script>
+
+</body>
+</html>
