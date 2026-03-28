@@ -3,97 +3,28 @@
 <head>
   <title>ModHostUlta</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      background: #0b1120;
-      color: white;
-    }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      padding: 15px 25px;
-      background: #020617;
-      border-bottom: 1px solid #1e293b;
-    }
-    .logo { font-weight: bold; }
-    .btn {
-      background: #6366f1;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .hidden { display: none; }
-    .center { text-align: center; margin-top: 100px; }
-    .title { font-size: 50px; font-weight: bold; }
-    .section-btn {
-      display: inline-block;
-      margin: 10px;
-      padding: 14px 26px;
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .search {
-      width: 60%;
-      margin: 20px auto;
-      padding: 12px;
-      border-radius: 8px;
-      background: #020617;
-      border: 1px solid #1e293b;
-      color: white;
-      display: block;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .card {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 15px;
-      cursor: pointer;
-    }
-    .summary {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-top: 6px;
-    }
-    input, textarea, select {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 280px;
-      border-radius: 8px;
-      border: 1px solid #1e293b;
-      background: #020617;
-      color: white;
-    }
-    .page {
-      padding: 30px;
-      max-width: 800px;
-      margin: auto;
-    }
-    a { color: #818cf8; text-decoration: none; }
+    body { margin:0; font-family:Inter,sans-serif; background:#0b1120; color:white; }
+    .topbar { display:flex; justify-content:space-between; padding:15px 25px; background:#020617; border-bottom:1px solid #1e293b; }
+    .logo { font-weight:bold; }
+    .btn { background:#6366f1; padding:8px 14px; border-radius:8px; cursor:pointer; margin-left:10px; }
+    .hidden { display:none; }
+    .center { text-align:center; margin-top:100px; }
+    .title { font-size:50px; font-weight:bold; }
+    .section-btn { display:inline-block; margin:10px; padding:14px 26px; background:#020617; border:1px solid #1e293b; border-radius:10px; cursor:pointer; }
+    .search { width:60%; margin:20px auto; padding:12px; border-radius:8px; border:1px solid #1e293b; background:#020617; color:white; display:block; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; padding:20px; }
+    .card { background:#020617; border:1px solid #1e293b; border-radius:12px; padding:15px; cursor:pointer; }
+    .summary { color:#94a3b8; font-size:14px; margin-top:6px; }
+    input, textarea, select { display:block; margin:10px auto; padding:10px; width:280px; border-radius:8px; border:1px solid #1e293b; background:#020617; color:white; }
+    .page { padding:30px; max-width:800px; margin:auto; }
+    a { color:#818cf8; text-decoration:none; }
   </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="logo">ModHostUlta</div>
-  <div id="authArea">
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <span class="btn" onclick="signup()">Sign Up</span>
-    <span class="btn" onclick="loginEmail()">Login</span>
-    <span class="btn" onclick="loginDiscord()">Discord</span>
-    <span class="btn" onclick="loginGithub()">GitHub</span>
-  </div>
+  <div id="authArea"></div>
 </div>
 
 <div id="home" class="center">
@@ -164,42 +95,20 @@ const authArea = document.getElementById("authArea")
 let category = null
 let allMods = []
 
-window.signup = async () => {
-  const email = document.getElementById("email").value
-  const password = document.getElementById("password").value
-  const { error } = await supabase.auth.signUp({ email, password })
-  if(error) alert(error.message)
-  else alert("Account created")
-}
-
-window.loginEmail = async () => {
-  const email = document.getElementById("email").value
-  const password = document.getElementById("password").value
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if(error) alert(error.message)
-  else location.reload()
-}
-
-window.loginDiscord = async () => {
-  await supabase.auth.signInWithOAuth({ provider: 'discord' })
-}
-
-window.loginGithub = async () => {
-  await supabase.auth.signInWithOAuth({ provider: 'github' })
-}
-
-window.logout = async () => {
-  await supabase.auth.signOut()
-  location.reload()
-}
-
 async function checkUser() {
   const { data: { session } } = await supabase.auth.getSession()
   if(session){
-    authArea.innerHTML = `<span>Logged in</span><span class="btn" onclick="logout()">Logout</span>`
-    document.getElementById("publish").classList.remove("hidden")
+    authArea.innerHTML = `<span>Logged in</span> <span class="btn" onclick="logout()">Logout</span>`
+    publish.classList.remove("hidden")
+  } else {
+    authArea.innerHTML = `
+      <span class="btn" onclick="location.href='/signup'">Sign Up</span>
+      <span class="btn" onclick="location.href='/login'">Login</span>
+    `
   }
 }
+
+window.logout = async () => { await supabase.auth.signOut(); location.reload() }
 
 document.querySelectorAll(".section-btn").forEach(btn => {
   btn.onclick = () => {
@@ -232,7 +141,7 @@ document.getElementById("submitBtn").onclick = async () => {
 }
 
 async function loadMods() {
-  const { data } = await supabase.from('mods').select('*').eq('category', category).order('created_at', { ascending: false })
+  const { data } = await supabase.from('mods').select('*').eq('category', category).order('created_at', { ascending:false })
   allMods = data
   renderMods(data)
 }
