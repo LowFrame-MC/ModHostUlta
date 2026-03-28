@@ -18,7 +18,7 @@
       border-bottom: 1px solid #1e293b;
     }
 
-    .logo { font-weight: bold; font-size: 18px; }
+    .logo { font-weight: bold; }
 
     .btn {
       background: #6366f1;
@@ -36,14 +36,8 @@
     }
 
     .title {
-      font-size: 52px;
+      font-size: 50px;
       font-weight: bold;
-      letter-spacing: -1px;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      margin-top: 10px;
     }
 
     .section-btn {
@@ -54,11 +48,6 @@
       border: 1px solid #1e293b;
       border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .section-btn:hover {
-      border-color: #6366f1;
     }
 
     .search {
@@ -85,12 +74,6 @@
       border-radius: 12px;
       padding: 15px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: #6366f1;
     }
 
     .summary {
@@ -135,12 +118,13 @@
 
 <div id="home" class="center">
   <div class="title">ModHostUlta</div>
-  <div class="subtitle">The ultimate way to find mods, resource packs, and shaders</div>
+  <p>The ultimate way to find mods, resource packs, shaders, and plugins</p>
 
   <div>
     <div class="section-btn" data-cat="Mod">Mods</div>
     <div class="section-btn" data-cat="Resource Pack">Resource Packs</div>
     <div class="section-btn" data-cat="Shader">Shaders</div>
+    <div class="section-btn" data-cat="Plugin">Plugins</div>
   </div>
 </div>
 
@@ -160,12 +144,27 @@
   <input id="url" placeholder="GitHub / MediaFire URL">
 
   <select id="loader">
-    <option>Fabric</option>
-    <option>Forge</option>
-    <option>NeoForge</option>
-    <option>Sponge</option>
-    <option>OptiFine</option>
-    <option>Iris</option>
+    <optgroup label="Client Loaders">
+      <option>Fabric</option>
+      <option>Forge</option>
+      <option>NeoForge</option>
+      <option>OptiFine</option>
+      <option>Iris</option>
+    </optgroup>
+    <optgroup label="Plugin Loaders">
+      <option>Paper</option>
+      <option>Spigot</option>
+      <option>Bukkit</option>
+      <option>Velocity</option>
+      <option>BungeeCord</option>
+    </optgroup>
+  </select>
+
+  <select id="categorySelect">
+    <option value="Mod">Mod</option>
+    <option value="Resource Pack">Resource Pack</option>
+    <option value="Shader">Shader</option>
+    <option value="Plugin">Plugin</option>
   </select>
 
   <button class="btn" id="submitBtn">Submit</button>
@@ -197,8 +196,8 @@ loginBtn.onclick = async () => {
 }
 
 async function checkUser() {
-  const { data } = await supabase.auth.getUser()
-  if (data.user) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) {
     loginBtn.style.display = "none"
     publishBtn.classList.remove("hidden")
   }
@@ -233,13 +232,15 @@ document.getElementById("submitBtn").onclick = async () => {
     return alert("Invalid link")
   }
 
+  const selectedCategory = document.getElementById("categorySelect").value
+
   await supabase.from('mods').insert({
-    name: name.value,
-    summary: summary.value,
-    description: desc.value,
+    name: document.getElementById("name").value,
+    summary: document.getElementById("summary").value,
+    description: document.getElementById("desc").value,
     download_url: url,
-    loader: loader.value,
-    category,
+    loader: document.getElementById("loader").value,
+    category: selectedCategory,
     user_id: user.id
   })
 
