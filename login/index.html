@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - ModHostUlta</title>
+  <style>
+    body { margin:0; font-family:Inter,sans-serif; background:#0b1120; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .container { text-align:center; background:#020617; padding:40px; border-radius:12px; border:1px solid #1e293b; width:320px; }
+    input { width:100%; margin:10px 0; padding:10px; border-radius:8px; border:1px solid #1e293b; background:#0b1120; color:white; }
+    .btn { width:100%; margin-top:10px; padding:10px; border-radius:8px; background:#6366f1; cursor:pointer; }
+    a { color:#818cf8; text-decoration:none; display:block; margin-top:12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <span class="btn" onclick="loginEmail()">Login</span>
+    <span class="btn" onclick="loginDiscord()">Login with Discord</span>
+    <span class="btn" onclick="loginGithub()">Login with GitHub</span>
+    <a href="/signup">Don't have an account? Sign Up</a>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient(
+      'https://dykpxbseaqtjpfznofgl.supabase.co',
+      'sb_publishable_D_ne4_vfo-pshzHMsBg3Jw_d8K7F8lt'
+    )
+
+    window.loginEmail = async () => {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if(error) alert(error.message)
+      else location.href="/"
+    }
+
+    window.loginDiscord = async () => {
+      await supabase.auth.signInWithOAuth({ provider:'discord' })
+    }
+
+    window.loginGithub = async () => {
+      await supabase.auth.signInWithOAuth({ provider:'github' })
+    }
+  </script>
+</body>
+</html>
