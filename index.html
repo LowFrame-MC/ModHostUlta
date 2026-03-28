@@ -9,7 +9,6 @@
       background: #0b1120;
       color: white;
     }
-
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -17,9 +16,7 @@
       background: #020617;
       border-bottom: 1px solid #1e293b;
     }
-
     .logo { font-weight: bold; }
-
     .btn {
       background: #6366f1;
       padding: 8px 14px;
@@ -27,19 +24,9 @@
       cursor: pointer;
       margin-left: 10px;
     }
-
     .hidden { display: none; }
-
-    .center {
-      text-align: center;
-      margin-top: 100px;
-    }
-
-    .title {
-      font-size: 50px;
-      font-weight: bold;
-    }
-
+    .center { text-align: center; margin-top: 100px; }
+    .title { font-size: 50px; font-weight: bold; }
     .section-btn {
       display: inline-block;
       margin: 10px;
@@ -49,7 +36,6 @@
       border-radius: 10px;
       cursor: pointer;
     }
-
     .search {
       width: 60%;
       margin: 20px auto;
@@ -60,14 +46,12 @@
       color: white;
       display: block;
     }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
       gap: 20px;
       padding: 20px;
     }
-
     .card {
       background: #020617;
       border: 1px solid #1e293b;
@@ -75,13 +59,11 @@
       padding: 15px;
       cursor: pointer;
     }
-
     .summary {
       color: #94a3b8;
       font-size: 14px;
       margin-top: 6px;
     }
-
     input, textarea, select {
       display: block;
       margin: 10px auto;
@@ -92,34 +74,31 @@
       background: #020617;
       color: white;
     }
-
     .page {
       padding: 30px;
       max-width: 800px;
       margin: auto;
     }
-
-    a {
-      color: #818cf8;
-      text-decoration: none;
-    }
+    a { color: #818cf8; text-decoration: none; }
   </style>
 </head>
-
 <body>
 
 <div class="topbar">
   <div class="logo">ModHostUlta</div>
-  <div>
-    <span id="publishBtn" class="btn hidden">Publish</span>
-    <span id="loginBtn" class="btn">Login</span>
+  <div id="authArea">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <span class="btn" onclick="signup()">Sign Up</span>
+    <span class="btn" onclick="loginEmail()">Login</span>
+    <span class="btn" onclick="loginDiscord()">Discord</span>
+    <span class="btn" onclick="loginGithub()">GitHub</span>
   </div>
 </div>
 
 <div id="home" class="center">
   <div class="title">ModHostUlta</div>
   <p>The ultimate way to find mods, resource packs, shaders, and plugins</p>
-
   <div>
     <div class="section-btn" data-cat="Mod">Mods</div>
     <div class="section-btn" data-cat="Resource Pack">Resource Packs</div>
@@ -137,12 +116,10 @@
 
 <div id="publish" class="hidden center">
   <h2>Publish</h2>
-
   <input id="name" placeholder="Name">
   <textarea id="summary" placeholder="Summary"></textarea>
   <textarea id="desc" placeholder="Description"></textarea>
   <input id="url" placeholder="GitHub / MediaFire URL">
-
   <select id="loader">
     <optgroup label="Client Loaders">
       <option>Fabric</option>
@@ -159,14 +136,12 @@
       <option>BungeeCord</option>
     </optgroup>
   </select>
-
   <select id="categorySelect">
     <option value="Mod">Mod</option>
     <option value="Resource Pack">Resource Pack</option>
     <option value="Shader">Shader</option>
     <option value="Plugin">Plugin</option>
   </select>
-
   <button class="btn" id="submitBtn">Submit</button>
 </div>
 
@@ -184,22 +159,45 @@ const publish = document.getElementById("publish")
 const modPage = document.getElementById("modPage")
 const mods = document.getElementById("mods")
 const searchInput = document.getElementById("search")
-
-const loginBtn = document.getElementById("loginBtn")
-const publishBtn = document.getElementById("publishBtn")
+const authArea = document.getElementById("authArea")
 
 let category = null
 let allMods = []
 
-loginBtn.onclick = async () => {
+window.signup = async () => {
+  const email = document.getElementById("email").value
+  const password = document.getElementById("password").value
+  const { error } = await supabase.auth.signUp({ email, password })
+  if(error) alert(error.message)
+  else alert("Account created")
+}
+
+window.loginEmail = async () => {
+  const email = document.getElementById("email").value
+  const password = document.getElementById("password").value
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if(error) alert(error.message)
+  else location.reload()
+}
+
+window.loginDiscord = async () => {
   await supabase.auth.signInWithOAuth({ provider: 'discord' })
+}
+
+window.loginGithub = async () => {
+  await supabase.auth.signInWithOAuth({ provider: 'github' })
+}
+
+window.logout = async () => {
+  await supabase.auth.signOut()
+  location.reload()
 }
 
 async function checkUser() {
   const { data: { session } } = await supabase.auth.getSession()
-  if (session) {
-    loginBtn.style.display = "none"
-    publishBtn.classList.remove("hidden")
+  if(session){
+    authArea.innerHTML = `<span>Logged in</span><span class="btn" onclick="logout()">Logout</span>`
+    document.getElementById("publish").classList.remove("hidden")
   }
 }
 
@@ -214,26 +212,13 @@ document.querySelectorAll(".section-btn").forEach(btn => {
   }
 })
 
-publishBtn.onclick = () => {
-  home.style.display = "none"
-  browse.style.display = "none"
-  publish.style.display = "block"
-  modPage.style.display = "none"
-}
-
 document.getElementById("submitBtn").onclick = async () => {
   const { data } = await supabase.auth.getUser()
   const user = data.user
-  if (!user) return alert("Login required")
-
+  if(!user) return alert("Login required")
   const url = document.getElementById("url").value
-
-  if (!url.includes("github.com") && !url.includes("mediafire.com")) {
-    return alert("Invalid link")
-  }
-
+  if(!url.includes("github.com") && !url.includes("mediafire.com")) return alert("Invalid link")
   const selectedCategory = document.getElementById("categorySelect").value
-
   await supabase.from('mods').insert({
     name: document.getElementById("name").value,
     summary: document.getElementById("summary").value,
@@ -243,17 +228,11 @@ document.getElementById("submitBtn").onclick = async () => {
     category: selectedCategory,
     user_id: user.id
   })
-
   alert("Published")
 }
 
 async function loadMods() {
-  const { data } = await supabase
-    .from('mods')
-    .select('*')
-    .eq('category', category)
-    .order('created_at', { ascending: false })
-
+  const { data } = await supabase.from('mods').select('*').eq('category', category).order('created_at', { ascending: false })
   allMods = data
   renderMods(data)
 }
@@ -263,35 +242,24 @@ searchInput.oninput = () => {
   renderMods(allMods.filter(m => m.name.toLowerCase().includes(val)))
 }
 
-function renderMods(data) {
+function renderMods(data){
   mods.innerHTML = ""
   data.forEach(mod => {
     const el = document.createElement("div")
     el.className = "card"
-    el.innerHTML = `
-      <h3>${mod.name}</h3>
-      <div class="summary">${mod.summary || ""}</div>
-    `
+    el.innerHTML = `<h3>${mod.name}</h3><div class="summary">${mod.summary || ""}</div>`
     el.onclick = () => openMod(mod)
     mods.appendChild(el)
   })
 }
 
-function openMod(mod) {
+function openMod(mod){
   browse.style.display = "none"
   modPage.style.display = "block"
-
-  modPage.innerHTML = `
-    <h1>${mod.name}</h1>
-    <p>${mod.description || ""}</p>
-    <p><b>Loader:</b> ${mod.loader}</p>
-    <br>
-    <a href="${mod.download_url}" target="_blank">Download</a>
-  `
+  modPage.innerHTML = `<h1>${mod.name}</h1><p>${mod.description || ""}</p><p><b>Loader:</b> ${mod.loader}</p><br><a href="${mod.download_url}" target="_blank">Download</a>`
 }
 
 checkUser()
 </script>
-
 </body>
 </html>
