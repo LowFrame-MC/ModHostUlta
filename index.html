@@ -5,23 +5,26 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
-      background: #0f0f0f;
+      font-family: 'Segoe UI';
+      background: linear-gradient(135deg, #0f172a, #020617);
       color: white;
     }
 
     .topbar {
       display: flex;
-      justify-content: flex-end;
-      padding: 15px;
+      justify-content: space-between;
+      padding: 15px 25px;
+      background: rgba(0,0,0,0.4);
     }
 
-    .login-btn {
-      background: #5865F2;
+    .btn {
+      background: #6366f1;
       padding: 8px 14px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
     }
+
+    .hidden { display: none; }
 
     .center {
       text-align: center;
@@ -29,78 +32,64 @@
     }
 
     .title {
-      font-size: 48px;
-      font-weight: bold;
-    }
-
-    .subtitle {
-      margin-top: 10px;
-      color: #aaa;
-    }
-
-    .sections {
-      margin-top: 40px;
+      font-size: 50px;
+      background: linear-gradient(90deg,#818cf8,#22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .section-btn {
       display: inline-block;
-      margin: 10px;
       padding: 15px 25px;
-      background: #1a1a1a;
-      border-radius: 10px;
+      margin: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
       cursor: pointer;
-      transition: 0.2s;
     }
 
-    .section-btn:hover {
-      background: #333;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .publish-box {
-      margin: 20px;
-      background: #1a1a1a;
-      padding: 15px;
+    .search {
+      width: 60%;
+      margin: 20px auto;
+      padding: 12px;
       border-radius: 10px;
-    }
-
-    input, select {
-      margin: 5px 0;
-      padding: 8px;
-      width: 200px;
-    }
-
-    button {
-      background: #5865F2;
-      border: none;
-      padding: 10px;
+      background: #020617;
       color: white;
-      border-radius: 6px;
-      cursor: pointer;
+      border: none;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+      gap: 20px;
       padding: 20px;
     }
 
     .card {
-      background: #1a1a1a;
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
       padding: 15px;
-      border-radius: 12px;
+      transition: 0.2s;
     }
 
-    .tag {
-      font-size: 12px;
-      background: #333;
-      padding: 3px 6px;
-      border-radius: 4px;
-      margin-right: 5px;
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .summary {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    input, textarea, select {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 260px;
+      border-radius: 8px;
+      border: none;
+      background: #020617;
+      color: white;
     }
   </style>
 </head>
@@ -108,49 +97,50 @@
 <body>
 
 <div class="topbar">
-  <div id="loginBtn" class="login-btn" onclick="login()">Login with Discord</div>
+  <div>ModHostUlta</div>
+  <div>
+    <span id="publishBtn" class="btn hidden" onclick="showPublish()">Publish</span>
+    <span id="loginBtn" class="btn" onclick="login()">Login</span>
+  </div>
 </div>
 
-<!-- HOME SCREEN -->
+<!-- HOME -->
 <div id="home" class="center">
   <div class="title">ModHostUlta</div>
-  <div class="subtitle">
-    The ultimate way to find mods, resource packs, and shaders, developed by LowFrame
-  </div>
+  <p>The ultimate way to find mods, resource packs, and shaders</p>
 
-  <div class="sections">
-    <div class="section-btn" onclick="openSection('Mod')">Mods</div>
-    <div class="section-btn" onclick="openSection('Resource Pack')">Resource Packs</div>
-    <div class="section-btn" onclick="openSection('Shader')">Shaders</div>
+  <div>
+    <div class="section-btn" onclick="browse('Mod')">Mods</div>
+    <div class="section-btn" onclick="browse('Resource Pack')">Resource Packs</div>
+    <div class="section-btn" onclick="browse('Shader')">Shaders</div>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app" class="hidden">
-
-  <div class="publish-box">
-    <h3>Publish</h3>
-
-    <input id="name" placeholder="Name"><br>
-    <input id="description" placeholder="Description"><br>
-    <input id="url" placeholder="GitHub / MediaFire URL"><br>
-
-    <select id="loader">
-      <option>Fabric</option>
-      <option>Forge</option>
-      <option>NeoForge</option>
-      <option>Sponge</option>
-      <option>OptiFine</option>
-      <option>Iris</option>
-    </select>
-
-    <input id="category" hidden>
-
-    <br><br>
-    <button onclick="publish()">Publish</button>
-  </div>
-
+<!-- BROWSE -->
+<div id="browse" class="hidden">
+  <input id="search" class="search" placeholder="Search..." oninput="loadMods()">
   <div class="grid" id="mods"></div>
+</div>
+
+<!-- PUBLISH -->
+<div id="publish" class="hidden center">
+  <h2>Publish</h2>
+
+  <input id="name" placeholder="Name">
+  <textarea id="summary" placeholder="Short summary (shown on card)"></textarea>
+  <textarea id="desc" placeholder="Full description"></textarea>
+  <input id="url" placeholder="GitHub / MediaFire URL">
+
+  <select id="loader">
+    <option>Fabric</option>
+    <option>Forge</option>
+    <option>NeoForge</option>
+    <option>Sponge</option>
+    <option>OptiFine</option>
+    <option>Iris</option>
+  </select>
+
+  <button class="btn" onclick="publishMod()">Submit</button>
 </div>
 
 <script type="module">
@@ -161,96 +151,78 @@ const supabase = createClient(
   'sb_publishable_D_ne4_vfo-pshzHMsBg3Jw_d8K7F8lt'
 )
 
-let currentCategory = null
+let category = null
 
-// 🔐 Login
 window.login = async () => {
-  await supabase.auth.signInWithOAuth({
-    provider: 'discord'
-  })
+  await supabase.auth.signInWithOAuth({ provider: 'discord' })
 }
 
-// 🧠 Check login state
 async function checkUser() {
   const { data } = await supabase.auth.getUser()
-  const user = data.user
-
-  if (user) {
-    document.getElementById("loginBtn").style.display = "none"
+  if (data.user) {
+    loginBtn.style.display = "none"
+    publishBtn.style.display = "inline-block"
   }
 }
 
-// 📂 Open section
-window.openSection = (category) => {
-  currentCategory = category
-  document.getElementById("category").value = category
-
-  document.getElementById("home").style.display = "none"
-  document.getElementById("app").style.display = "block"
-
+window.browse = (cat) => {
+  category = cat
+  home.style.display = "none"
+  browse.style.display = "block"
+  publish.style.display = "none"
   loadMods()
 }
 
-// 📦 Publish
-window.publish = async () => {
+window.showPublish = () => {
+  browse.style.display = "none"
+  publish.style.display = "block"
+}
+
+window.publishMod = async () => {
   const { data } = await supabase.auth.getUser()
   const user = data.user
+  if (!user) return alert("Login required")
 
-  if (!user) {
-    alert("You must be logged in to publish")
-    return
-  }
-
-  const name = document.getElementById('name').value
-  const description = document.getElementById('description').value
-  const url = document.getElementById('url').value
-  const loader = document.getElementById('loader').value
+  const url = document.getElementById("url").value
 
   if (!url.includes("github.com") && !url.includes("mediafire.com")) {
-    alert("Only GitHub or MediaFire links allowed")
-    return
+    return alert("Only GitHub or MediaFire links allowed")
   }
 
   await supabase.from('mods').insert({
-    name,
-    description,
+    name: name.value,
+    summary: summary.value,
+    description: desc.value,
     download_url: url,
-    loader,
-    category: currentCategory,
+    loader: loader.value,
+    category,
     user_id: user.id
   })
 
   alert("Published!")
-  loadMods()
 }
 
-// 📥 Load mods
-async function loadMods() {
+window.loadMods = async () => {
+  const search = document.getElementById("search").value.toLowerCase()
+
   const { data } = await supabase
     .from('mods')
     .select('*')
-    .eq('category', currentCategory)
+    .eq('category', category)
     .order('created_at', { ascending: false })
 
-  const container = document.getElementById('mods')
-  container.innerHTML = ""
+  mods.innerHTML = ""
 
-  data.forEach(mod => {
-    container.innerHTML += `
-      <div class="card">
-        <h3>${mod.name}</h3>
-        <p>${mod.description || ""}</p>
-
-        <div>
-          <span class="tag">${mod.loader}</span>
-          <span class="tag">${mod.category}</span>
+  data
+    .filter(m => m.name.toLowerCase().includes(search))
+    .forEach(mod => {
+      mods.innerHTML += `
+        <div class="card">
+          <h3>${mod.name}</h3>
+          <div class="summary">${mod.summary || ""}</div>
         </div>
-
-        <br>
-        <a href="${mod.download_url}" target="_blank">Download</a>
-      </div>
-    `
-  })
+      `
+    })
 }
 
 checkUser()
